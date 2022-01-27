@@ -221,10 +221,26 @@ a:visited {
 
 @media (max-width: 59em) {
   html {
-    font-size: 50%;
+    font-size: 40%;
   }
   body {
     flex-direction: column;
-    height: 200vh;
+    height: 100vh;
+  }
+  .workouts {
+    height: 30vh;
+  }
+  .sidebar {
+    flex-basis: 3rem;
+    padding: 2rem 4rem 2rem 4rem;
+  }
+  .logo {
+    height: 3.2rem;
+  }
+  .leaflet-popup .leaflet-popup-content-wrapper {
+    background-color: var(--color-dark--1);
+    color: var(--color-light--2);
+    border-radius: 100px 20px 100px 100px;
+    padding-right: 0.6rem;
   }
 }
