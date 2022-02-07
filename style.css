@@ -71,7 +71,6 @@ a:visited {
   border-radius: 5px;
   padding: 1.5rem 2.25rem;
   margin-bottom: 1.75rem;
-  cursor: pointer;
 
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -87,7 +86,8 @@ a:visited {
 .workout__title {
   font-size: 1.7rem;
   font-weight: 600;
-  grid-column: 1 / -1;
+  grid-column: 1 / -2;
+  cursor: pointer;
 }
 
 .workout__details {
@@ -101,6 +101,11 @@ a:visited {
   height: 0.28rem;
 }
 
+.action-icon {
+  display: flex;
+  gap: 1.6rem;
+  justify-content: center;
+}
 .workout__value {
   font-size: 1.5rem;
   margin-right: 0.5rem;

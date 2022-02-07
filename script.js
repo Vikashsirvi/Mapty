@@ -212,8 +212,14 @@ class App {
   }
   _renderWorkout(workout) {
     let html = `
-    <li class="workout workout--${workout.type}" data-id="${workout.id}">
-    <h2 class="workout__title">${workout.description}</h2>
+    <li class="workout workout--${workout.type}" >
+    <h2 class="workout__title" data-id="${workout.id}">${
+      workout.description
+    }</h2>
+    <div class="action-icon">
+    <span class="workout__icon"><img src="https://img.icons8.com/color/24/000000/delete-sign--v1.png"/></span>
+    <span class="workout__icon"><img src="https://img.icons8.com/color/24/000000/map-editing.png"/></span>
+    </div>
     <div class="workout__details">
       <span class="workout__icon">${
         workout.type === 'running' ? '🏃' : '🚴'
@@ -257,7 +263,7 @@ class App {
     form.insertAdjacentHTML('afterend', html);
   }
   _moveToPopup(e) {
-    const workoutEl = e.target.closest('.workout');
+    const workoutEl = e.target.closest('.workout__title');
     console.log(workoutEl);
     if (!workoutEl) return;
     const workout = this.#workouts.find(
