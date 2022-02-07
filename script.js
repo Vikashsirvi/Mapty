@@ -82,6 +82,7 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    containerWorkouts.addEventListener('click', this._removeWorkout.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation) {
@@ -217,8 +218,12 @@ class App {
       workout.description
     }</h2>
     <div class="action-icon">
-    <span class="workout__icon"><img src="https://img.icons8.com/color/24/000000/delete-sign--v1.png"/></span>
-    <span class="workout__icon"><img src="https://img.icons8.com/color/24/000000/map-editing.png"/></span>
+    <span class="workout__icon remove__icon" data-id="${
+      workout.id
+    }"><img src="https://img.icons8.com/color/24/000000/delete-sign--v1.png"/></span>
+    <span class="workout__icon edit__icon" data-id="${
+      workout.id
+    }"><img src="https://img.icons8.com/color/24/000000/map-editing.png"/></span>
     </div>
     <div class="workout__details">
       <span class="workout__icon">${
@@ -264,12 +269,12 @@ class App {
   }
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.workout__title');
-    console.log(workoutEl);
+    // console.log(workoutEl);
     if (!workoutEl) return;
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
-    console.log(workout);
+    // console.log(workout);
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
       pan: {
@@ -289,6 +294,19 @@ class App {
     this.#workouts.forEach(work => {
       this._renderWorkout(work);
     });
+  }
+  _removeWorkout(e) {
+    const removeEl = e.target.closest('.remove__icon');
+    if (!removeEl) return;
+    const remworkouts = this.#workouts.filter(
+      work => work.id !== removeEl.dataset.id
+    );
+    localStorage.removeItem('workouts');
+    this.#workouts = remworkouts;
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+    location.reload();
+    console.log(this.#workouts);
+    console.log(remworkouts);
   }
   reset() {
     localStorage.removeItem('workouts');
