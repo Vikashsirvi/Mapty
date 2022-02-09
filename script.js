@@ -1,13 +1,21 @@
 'use strict';
 
 class Workout {
-  date = new Date();
-  id = (Date.now() + '').slice(-10);
   clicks = 0;
-  constructor(coords, distance, duration) {
+  constructor(coords, distance, duration, date, id) {
     this.coords = coords; // [lat,lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
+    if (!date) {
+      this.date = new Date();
+    } else {
+      this.date = new Date(date);
+    }
+    if (!id) {
+      this.id = (Date.now() + '').slice(-10);
+    } else {
+      this.id = id;
+    }
   }
   _setDescription() {
     // prettier-ignore
@@ -23,8 +31,8 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
-  constructor(coords, distance, duration, cadence) {
-    super(coords, distance, duration);
+  constructor(coords, distance, duration, cadence, date, id) {
+    super(coords, distance, duration, date, id);
     this.cadence = cadence;
     this.calcPace();
     this._setDescription();
@@ -39,9 +47,9 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
-  constructor(coords, distance, duration, elvationGain) {
-    super(coords, distance, duration);
-    this.elvationGain = elvationGain;
+  constructor(coords, distance, duration, elevation, date, id) {
+    super(coords, distance, duration, date, id);
+    this.elevation = elevation;
     this.calcSpeed();
     this._setDescription();
   }
@@ -83,6 +91,7 @@ class App {
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     containerWorkouts.addEventListener('click', this._removeWorkout.bind(this));
+    containerWorkouts.addEventListener('click', this._editWorkout.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation) {
@@ -260,7 +269,7 @@ class App {
     </div>
     <div class="workout__details">
       <span class="workout__icon">⛰</span>
-      <span class="workout__value">${workout.elvationGain}</span>
+      <span class="workout__value">${workout.elevation}</span>
       <span class="workout__unit">m</span>
     </div>
   </li>`;
@@ -290,9 +299,36 @@ class App {
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
     if (!data) return;
-    this.#workouts = data;
+    this._parsingData(data);
+    console.log(this.#workouts);
     this.#workouts.forEach(work => {
       this._renderWorkout(work);
+    });
+  }
+  _parsingData(data) {
+    let newWorkout;
+    data.forEach(workout => {
+      if (workout.type === 'running') {
+        newWorkout = new Running(
+          workout.coords,
+          workout.distance,
+          workout.duration,
+          workout.cadence,
+          workout.date,
+          workout.id
+        );
+      }
+      if (workout.type === 'cycling') {
+        newWorkout = new Cycling(
+          workout.coords,
+          workout.distance,
+          workout.duration,
+          workout.elevation,
+          workout.date,
+          workout.id
+        );
+      }
+      this.#workouts.push(newWorkout);
     });
   }
   _removeWorkout(e) {
@@ -305,8 +341,26 @@ class App {
     this.#workouts = remworkouts;
     localStorage.setItem('workouts', JSON.stringify(this.#workouts));
     location.reload();
-    console.log(this.#workouts);
-    console.log(remworkouts);
+  }
+  _editWorkout(e) {
+    // const editEl = e.target.closest('.edit__icon');
+    // if (!editEl) return;
+    // const workoutData = this.#workouts.find(
+    //   work => work.id === editEl.dataset.id
+    // );
+    // inputType.value = workoutData.type;
+    // inputDistance.value = workoutData.distance;
+    // inputDuration.value = workoutData.duration;
+    // if (workoutData.type === 'running') {
+    //   inputCadence.value = workoutData.cadence;
+    // }
+    // if (workoutData.type === 'cycling') {
+    //   inputCadence.value = workoutData.elevation;
+    // }
+    // if (editEl) {
+    //   this._showForm();
+    //   console.log(workoutData);
+    // }
   }
   reset() {
     localStorage.removeItem('workouts');
