@@ -213,6 +213,7 @@ class App {
     //Set local Storage to all workouts
     this._setLocalStorage();
     //........................................///////////////////
+    location.reload();
     ///...............................................///////////
   }
 
