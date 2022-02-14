@@ -67,14 +67,17 @@ class Cycling extends Workout {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Application Architecture
 const form = document.querySelector('.form');
+const container = document.querySelector('#map');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
 const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const resetBtn = document.querySelector('.reset_icon');
 
 class App {
+  #editElId;
   #map;
   #mapZoomLevel = 13;
   #mapEvent;
@@ -87,7 +90,11 @@ class App {
     this._getLocalStorage();
 
     //Attach event Handlers
-    form.addEventListener('submit', this._newWorkout.bind(this));
+    container.addEventListener('click', loadnewWorkout.bind(this));
+    function loadnewWorkout() {
+      form.addEventListener('submit', this._newWorkout.bind(this));
+    }
+    resetBtn.addEventListener('click', this._removeAll.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     containerWorkouts.addEventListener('click', this._removeWorkout.bind(this));
@@ -125,7 +132,10 @@ class App {
     });
   }
   _showForm(mapE) {
-    this.#mapEvent = mapE;
+    if (mapE) {
+      this.#mapEvent = mapE;
+    }
+    inputType.removeAttribute('disabled');
     form.classList.remove('hidden');
     inputDistance.focus();
   }
@@ -144,6 +154,7 @@ class App {
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
   _newWorkout(e) {
+    console.log('called');
     e.preventDefault();
 
     const validInputs = (...inputs) =>
@@ -201,6 +212,9 @@ class App {
     this._hideForm();
     //Set local Storage to all workouts
     this._setLocalStorage();
+    //........................................///////////////////
+    location.reload();
+    ///...............................................///////////
   }
 
   _renderWorkoutMarker(workout) {
@@ -305,6 +319,7 @@ class App {
       this._renderWorkout(work);
     });
   }
+  //................................................///
   _parsingData(data) {
     let newWorkout;
     data.forEach(workout => {
@@ -334,37 +349,152 @@ class App {
   _removeWorkout(e) {
     const removeEl = e.target.closest('.remove__icon');
     if (!removeEl) return;
+    //getting workout id
     const remworkouts = this.#workouts.filter(
       work => work.id !== removeEl.dataset.id
     );
+    //removing localStorage
     localStorage.removeItem('workouts');
+
     this.#workouts = remworkouts;
+    //Updating Local Storage
     localStorage.setItem('workouts', JSON.stringify(this.#workouts));
-    location.reload();
+    //Deleting All Elements
+    this._resetElement();
+    //rendering remaining elements
+    this._updateWorkouts(remworkouts);
   }
   _editWorkout(e) {
-    // const editEl = e.target.closest('.edit__icon');
-    // if (!editEl) return;
-    // const workoutData = this.#workouts.find(
-    //   work => work.id === editEl.dataset.id
-    // );
-    // inputType.value = workoutData.type;
-    // inputDistance.value = workoutData.distance;
-    // inputDuration.value = workoutData.duration;
-    // if (workoutData.type === 'running') {
-    //   inputCadence.value = workoutData.cadence;
-    // }
-    // if (workoutData.type === 'cycling') {
-    //   inputCadence.value = workoutData.elevation;
-    // }
-    // if (editEl) {
-    //   this._showForm();
-    //   console.log(workoutData);
-    // }
+    const editEl = e.target.closest('.edit__icon');
+    if (!editEl) return;
+    const workoutData = this.#workouts.find(
+      work => work.id === editEl.dataset.id
+    );
+    let workout = {};
+    workout.type = workoutData.type;
+    workout.distance = workoutData.distance;
+    workout.duration = workoutData.duration;
+    workout.id = workoutData.id;
+    if (workoutData.cadence) {
+      workout.cadence = workoutData.cadence;
+    }
+    if (workoutData.elevation) {
+      workout.elevation = workoutData.elevation;
+    }
+    inputType.value = workout.type;
+    inputDistance.value = workout.distance;
+    inputDuration.value = workout.duration;
+    if (workout.type === 'running') {
+      inputElevation.closest('.form__row').classList.add('form__row--hidden');
+      inputCadence.closest('.form__row').classList.remove('form__row--hidden');
+      inputCadence.value = workout.cadence;
+    }
+    if (workout.type === 'cycling') {
+      inputCadence.closest('.form__row').classList.add('form__row--hidden');
+      inputElevation
+        .closest('.form__row')
+        .classList.remove('form__row--hidden');
+      inputElevation.value = workout.elevation;
+    }
+
+    form.addEventListener('submit', this._submitWorkout.bind(this, workout));
+
+    if (editEl) {
+      this._showForm();
+    }
+    inputType.setAttribute('disabled', 'true');
   }
-  reset() {
+  _submitWorkout(workout, e) {
+    e.preventDefault();
+    const validInputs = (...inputs) =>
+      inputs.every(inp => Number.isFinite(inp));
+    const allPositive = (...inputs) => inputs.every(inp => inp > 0);
+    const id = workout.id;
+    const editworkouts = this.#workouts.find(work => work.id === id);
+    if (!inputDistance.value) {
+      return;
+    }
+    const distance = +inputDistance.value;
+    const duration = +inputDuration.value;
+    if (editworkouts.type === 'running') {
+      const cadence = +inputCadence.value;
+      if (
+        !validInputs(distance, duration, cadence) ||
+        !allPositive(distance, duration, cadence)
+      ) {
+        return alert('Inputs have to be positive numbers');
+      }
+      editworkouts.distance = distance;
+      editworkouts.duration = duration;
+      editworkouts.cadence = cadence;
+      function calcPace(duration, distance) {
+        // min/km
+        const pace = duration / distance;
+        return pace;
+      }
+      editworkouts.pace = calcPace(duration, distance);
+    }
+    if (editworkouts.type === 'cycling') {
+      const elevation = +inputElevation.value;
+      if (
+        !validInputs(distance, duration, elevation) ||
+        !allPositive(distance, duration, elevation)
+      ) {
+        return alert('Inputs have to be positive numbers');
+      }
+      editworkouts.distance = distance;
+      editworkouts.duration = duration;
+      editworkouts.elevation = elevation;
+      function calcSpeed(distance, duration) {
+        // km/hr
+        const speed = distance / duration / 60;
+        return speed;
+      }
+      editworkouts.speed = calcSpeed(distance, duration);
+    }
     localStorage.removeItem('workouts');
-    location.reload();
+    this._setLocalStorage();
+    this._resetElement();
+    this._updateWorkouts(this.#workouts);
+    this._hideForm();
+  }
+  //Reseting Elements
+  _resetElement() {
+    const restoredEl = document.querySelectorAll('.workout');
+    const restoredPopup = document.querySelectorAll('.leaflet-popup');
+    const restoredMarker = document.querySelectorAll('.leaflet-marker-icon');
+    const restoredShadow = document.querySelectorAll('.leaflet-marker-shadow');
+
+    restoredEl.forEach(ele => {
+      ele.remove();
+    });
+    restoredPopup.forEach(pop => {
+      pop.remove();
+    });
+    restoredMarker.forEach(marker => {
+      marker.remove();
+    });
+    restoredShadow.forEach(shadow => {
+      shadow.remove();
+    });
+  }
+  //Repopulating Workouts
+  _updateWorkouts(workout) {
+    workout.forEach(workout => {
+      this._renderWorkout(workout);
+      this._renderWorkoutMarker(workout);
+    });
+  }
+
+  _removeAll() {
+    if (window.confirm('Do you really want to remove all Workouts!')) {
+      this._reset();
+    }
+  }
+  //......................................................////////
+  _reset() {
+    localStorage.removeItem('workouts');
+    this._resetElement();
   }
 }
 

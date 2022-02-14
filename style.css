@@ -49,10 +49,19 @@ a:visited {
   flex-direction: column;
 }
 
+.nav {
+  display: flex;
+  margin-bottom: 4rem;
+  gap: 3rem;
+  justify-self: center;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .logo {
   height: 5.2rem;
   align-self: center;
-  margin-bottom: 4rem;
+  margin: 0 4rem;
 }
 
 .workouts {
@@ -177,6 +186,26 @@ a:visited {
 
 .form__btn {
   display: none;
+}
+
+.reset_icon {
+  cursor: pointer;
+  margin: 0 0 0 3rem;
+}
+
+.reset_icon img {
+  height: 2.4rem;
+}
+
+.reset_text {
+  font-size: 2rem;
+}
+
+.reset_btn {
+  display: flex;
+  gap: 1rem;
+  justify-self: center;
+  align-items: center;
 }
 
 .copyright {
