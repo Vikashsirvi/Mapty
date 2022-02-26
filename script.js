@@ -75,9 +75,10 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 const resetBtn = document.querySelector('.reset_icon');
-
+const sortEl = document.querySelector('.sort__input');
+const sortUp = document.querySelector('.sort__up');
+const sortDown = document.querySelector('.sort__down');
 class App {
-  #editElId;
   #map;
   #mapZoomLevel = 13;
   #mapEvent;
@@ -99,6 +100,9 @@ class App {
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     containerWorkouts.addEventListener('click', this._removeWorkout.bind(this));
     containerWorkouts.addEventListener('click', this._editWorkout.bind(this));
+    sortEl.addEventListener('change', this._sortWorkout.bind(this));
+    sortUp.addEventListener('click', this._sortingOrder.bind(this));
+    sortDown.addEventListener('click', this._sortingOrder.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation) {
@@ -212,9 +216,6 @@ class App {
     this._hideForm();
     //Set local Storage to all workouts
     this._setLocalStorage();
-    //........................................///////////////////
-    location.reload();
-    ///...............................................///////////
   }
 
   _renderWorkoutMarker(workout) {
@@ -495,6 +496,61 @@ class App {
   _reset() {
     localStorage.removeItem('workouts');
     this._resetElement();
+  }
+  _sortingOrder() {
+    if (!sortDown.classList.contains('hidden')) {
+      sortDown.classList.add('hidden');
+      sortUp.classList.remove('hidden');
+      this._sortWorkout(this, 'ASC');
+    } else if (!sortUp.classList.contains('hidden')) {
+      sortUp.classList.add('hidden');
+      sortDown.classList.remove('hidden');
+      this._sortWorkout(this, 'DSC');
+    }
+  }
+  _sortWorkout(e, order = 'DSC') {
+    //By Default Sorting Order is Ascending
+    if (order === 'DSC') {
+      //Showing Up Sorting Descending Button
+      if (sortDown.classList.contains('hidden')) {
+        sortDown.classList.remove('hidden');
+        sortUp.classList.add('hidden');
+      }
+    }
+    const sortBy = sortEl.value;
+    if (sortBy === 'distance') {
+      this.#workouts.sort((a, b) => {
+        if (order === 'DSC') {
+          return a.distance - b.distance;
+        } else if (order === 'ASC') {
+          return b.distance - a.distance;
+        }
+      });
+      this._resetElement();
+      this._updateWorkouts(this.#workouts);
+    }
+    if (sortBy === 'duration') {
+      this.#workouts.sort((a, b) => {
+        if (order === 'DSC') {
+          return a.duration - b.duration;
+        } else if (order === 'ASC') {
+          return b.duration - a.duration;
+        }
+      });
+      this._resetElement();
+      this._updateWorkouts(this.#workouts);
+    }
+    if (sortBy === 'date') {
+      this.#workouts.sort((a, b) => {
+        if (order === 'DSC') {
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        } else if (order === 'ASC') {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        }
+      });
+      this._resetElement();
+      this._updateWorkouts(this.#workouts);
+    }
   }
 }
 
