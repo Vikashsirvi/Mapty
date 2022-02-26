@@ -64,6 +64,36 @@ a:visited {
   margin: 0 4rem;
 }
 
+.sort {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 2rem;
+  justify-self: center;
+  align-items: center;
+  font-size: 1.6rem;
+}
+.sort__input {
+  width: 70%;
+  padding: 0.3rem 1.1rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--color-light--3);
+  transition: all 0.2s;
+}
+
+.sort .hidden {
+  display: none;
+}
+
+.sort--arrow {
+  height: 2.4rem;
+  width: 2.4rem;
+  cursor: pointer;
+}
+
 .workouts {
   list-style: none;
   height: 77vh;
